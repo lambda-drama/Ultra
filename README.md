@@ -16,9 +16,26 @@ You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch version-16
+bench get-app https://github.com/lambda-drama/Ultra --branch ft/im
 bench install-app ultra_s
 ```
+
+> The app lives on branch `ft/im` of `lambda-drama/Ultra` (the `version-16` branch of that
+> repository holds the separate `ultra_f` app). The repository folder is therefore cloned as
+> `apps/Ultra` while the Python package — and the app name registered in `sites/apps.txt` — is
+> `ultra_s` (taken from `[project].name` in `pyproject.toml`), which bench supports.
+
+`pyproject.toml` declares the Frappe/ERPNext versions this app supports:
+
+```toml
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
+erpnext = ">=16.0.0,<17.0.0"
+```
+
+This section is required (bench refuses to resolve the app without it, and Frappe Cloud aborts
+with *"Could not find a compatible Frappe version in pyproject.toml"*). Keep it in sync when
+moving the app to another Frappe major version.
 
 ### Contributing
 
