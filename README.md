@@ -25,17 +25,22 @@ bench install-app ultra_s
 > `apps/Ultra` while the Python package — and the app name registered in `sites/apps.txt` — is
 > `ultra_s` (taken from `[project].name` in `pyproject.toml`), which bench supports.
 
-`pyproject.toml` declares the Frappe/ERPNext versions this app supports:
+`pyproject.toml` declares the Frappe/ERPNext versions this app supports — Frappe **v15 and v16**
+(the patch is plain `information_schema` + `ALTER TABLE` work, so it runs unchanged on both; on a
+v15 site it simply frees the same headroom before the upgrade):
 
 ```toml
+requires-python = ">=3.10"          # v15 benches run 3.10/3.11, v16 benches run 3.14
+
 [tool.bench.frappe-dependencies]
-frappe = ">=16.0.0,<17.0.0"
-erpnext = ">=16.0.0,<17.0.0"
+frappe = ">=15.0.0,<17.0.0"
+erpnext = ">=15.0.0,<17.0.0"
 ```
 
-This section is required (bench refuses to resolve the app without it, and Frappe Cloud aborts
-with *"Could not find a compatible Frappe version in pyproject.toml"*). Keep it in sync when
-moving the app to another Frappe major version.
+This section is required: bench refuses to resolve the app without it, and Frappe Cloud aborts
+with *"Could not find a compatible Frappe version in pyproject.toml"* or *"Version 15 is not
+supported by branch …"*. The declared range must include **every** Frappe major the app is built
+on, so keep `frappe`/`erpnext` in sync when moving to another version.
 
 ### Contributing
 
