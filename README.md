@@ -4,11 +4,34 @@ Row size and migration fixes for ultratechhome
 
 ### Patches
 
-- `ultra_s.patches.free_sales_invoice_row_size` (`[pre_model_sync]`): ERPNext v16 adds 14
-  columns to `tabSales Invoice`, which pushes this site over MariaDB's 65,535 byte limit for
-  the sum of a table's column definitions and aborts the upgrade with
+- `ultra_s.patches.free_sales_invoice_row_size` (`[pre_model_sync]` **and** `before_migrate`):
+  ERPNext v16 adds 14 columns to `tabSales Invoice`, which pushes this site over MariaDB's
+  65,535 byte limit for the sum of a table's column definitions and aborts the upgrade with
   `(1118) Row size too large`. The patch widens the most expendable custom `Data` columns to
   `text` (and mirrors the change on `Custom Field`) so the columns fit before doctype sync runs.
+
+It is registered twice on purpose. `Patch Log` silently disables a patch that an earlier, failed
+attempt already recorded, so `before_migrate` in `hooks.py` - which `Migrate.pre_schema_updates()`
+runs at the very start of every `bench migrate`, before any patch pass - calls the same idempotent
+`execute()` as the `[pre_model_sync]` entry in `patches.txt`. Every run prints, so the migrate log
+says exactly what happened:
+
+| log line | meaning |
+| --- | --- |
+| `ultra_s: tabSales Invoice uses 65011 of 65535 bytes, widening custom columns` then `widened 15 custom columns to text` | the fix was applied |
+| `ultra_s: ... uses 56761 of 65535 bytes, nothing to widen` | already applied, nothing to do |
+| no `ultra_s:` line at all | the app's code never ran: it is not installed on the site, or not in the bench of that release |
+
+On Frappe Cloud that last line is the one that matters: the app has to be part of the bench of the
+release the site is being updated to, and installed on the site (`bench --site <site> install-app
+ultra_s`), otherwise `migrate` never loads this app and the row size fix cannot happen at all -
+regardless of `patches.txt`.
+
+Columns are discovered from `information_schema` alone - `varchar`, nullable, no index covering
+them, not a field the DocType itself declares - and only `Custom Field` rows typed `Data` or
+`Small Text` (or a leftover `custom_*` column with no `Custom Field` row) qualify, because sync
+maps those to `text` too. `Link` and `Select` columns are left alone: they live in `varchar`
+columns as well, but sync would put them back after the `ADD COLUMN` pass has already failed.
 
 ### Installation
 

@@ -92,6 +92,14 @@ app_license = "mit"
 # 	"filters": "ultra_s.utils.jinja_filters"
 # }
 
+# Migrations
+# ------------
+# Runs at the very start of `bench migrate`, before pre_model_sync patches and before
+# DocType schema sync. The row size fix has to land before ERPNext adds its new columns,
+# and running it here as well means a Patch Log entry left behind by an earlier (failed)
+# attempt cannot stop it from being applied again.
+before_migrate = ["ultra_s.patches.free_sales_invoice_row_size.execute"]
+
 # Installation
 # ------------
 
