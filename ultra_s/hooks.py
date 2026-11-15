@@ -209,6 +209,8 @@ before_migrate = ["ultra_s.patches.free_sales_invoice_row_size.execute"]
 # 	"Task": "ultra_s.custom.task.CustomTaskMixin"
 # }
 
+override_doctype_class = {"User": "ultra_s.overrides.user.CustomUser"}
+
 # Overriding Methods
 # ------------------------------
 #
